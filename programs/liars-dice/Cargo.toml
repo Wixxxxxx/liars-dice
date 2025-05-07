@@ -1,0 +1,27 @@
+[package]
+name = "liars-dice"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "liars_dice"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"
+ephemeral-rollups-sdk = "0.2.5"
+ephemeral-vrf-sdk = "0.1.2"
+solana-program = "2.2.1"
+turbo-genesis-sdk = "2.2.4"
+
+[dev-dependencies]
+litesvm = "0.6.1"
