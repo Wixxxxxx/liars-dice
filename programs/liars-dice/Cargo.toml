@@ -20,8 +20,9 @@ idl-build = ["anchor-lang/idl-build"]
 anchor-lang = "0.31.1"
 ephemeral-rollups-sdk = "0.2.5"
 ephemeral-vrf-sdk = "0.1.2"
-solana-program = "2.2.1"
 turbo-genesis-sdk = "2.2.4"
 
 [dev-dependencies]
 litesvm = "0.6.1"
+solana-sdk = "2.1.21"
+tokio = { version = "^1.20", features = ["rt-multi-thread", "macros"] }
