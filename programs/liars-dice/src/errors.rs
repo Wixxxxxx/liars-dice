@@ -13,3 +13,21 @@ pub enum LiarsDiceError {
     #[msg("Player already joined the game")]
     PlayerAlreadyJoined,
 }
+
+#[error_code]
+pub enum PriceConversionError {
+    #[msg("Multiplication overflow")]
+    MultOverflow,
+    #[msg("Division Error")]
+    DivError,
+    #[msg("Conversion result is too large")]
+    ResultTooLarge,
+    #[msg("Invalid exponent")]
+    InvalidExponent,
+    #[msg("Invalid feed")]
+    FeedError,
+    #[msg("Clock error")]
+    ClockError,
+    #[msg("Price fetch error")]
+    PriceFetchError,
+}

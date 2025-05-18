@@ -7,6 +7,7 @@ pub mod state;
 pub use state::*;
 
 pub mod errors;
+pub mod utils;
 
 use anchor_lang::prelude::*;
 
