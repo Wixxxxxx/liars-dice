@@ -20,4 +20,8 @@ pub mod liars_dice {
     pub fn initialize(ctx: Context<Start>, player_num: u64, buy_in: u64) -> Result<()> {
         ctx.accounts.create_game(player_num, buy_in)
     }
+
+    pub fn join(ctx: Context<Join>, game_id: Pubkey) -> Result<()> {
+        ctx.accounts.join_game(game_id)
+    }
 }

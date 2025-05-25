@@ -1,0 +1,12 @@
+[package]
+name = "tests"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[dependencies]
+anchor-client = "0.31.1"
+anchor-lang = "0.31.1"
+liars-dice = { version = "0.1.0", path = "../programs/liars-dice" }
+litesvm = "0.6.1"
+tokio = { version = "^1.20", features = ["rt-multi-thread", "macros"] }
