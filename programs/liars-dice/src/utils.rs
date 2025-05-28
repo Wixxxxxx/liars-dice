@@ -1,6 +1,6 @@
 pub mod price_utils {
     use crate::errors::PriceConversionError;
-    use anchor_lang::prelude::{Clock, SolanaSysvar};
+    use anchor_lang::prelude::{msg, Clock, SolanaSysvar};
     use pyth_solana_receiver_sdk::price_update::{get_feed_id_from_hex, TwapUpdate};
 
     pub const FEED_ID: &str = "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d";
@@ -13,6 +13,9 @@ pub mod price_utils {
         // connect to pyth SOL/USD feed
         let feed_id: [u8; 32] =
             get_feed_id_from_hex(FEED_ID).map_err(|_| PriceConversionError::FeedError)?;
+
+        msg!("The actual feed ID is: {:?}", feed_id);
+        msg!("The feed ID passed in is: {:?}", twap_update.twap.feed_id);
 
         // fetch up to date SOL price
         let sol_price = twap_update

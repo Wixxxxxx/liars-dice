@@ -21,7 +21,7 @@ pub mod liars_dice {
         ctx.accounts.create_game(player_num, buy_in)
     }
 
-    pub fn join(ctx: Context<Join>, game_id: Pubkey) -> Result<()> {
+    pub fn join_game(ctx: Context<Join>, game_id: Pubkey) -> Result<()> {
         ctx.accounts.join_game(game_id)
     }
 }
