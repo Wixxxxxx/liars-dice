@@ -7,6 +7,7 @@ pub struct GameState {
     pub players: [Option<Pubkey>; 5],
     pub game_phase: GamePhase,
     pub buy_in: u64,
+    pub token_mint: Pubkey, // !don't forget to init
     pub pot: u64,
 }
 
@@ -25,7 +26,6 @@ impl GameState {
         self.game_phase = GamePhase::Lobby;
         self.buy_in = buy_in;
         self.pot = 0;
-
         Ok(())
     }
 }

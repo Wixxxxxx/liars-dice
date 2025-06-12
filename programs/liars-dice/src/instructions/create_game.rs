@@ -1,17 +1,26 @@
 use crate::state::game_state::GameState;
 use anchor_lang::prelude::*;
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
+use pyth_solana_receiver_sdk::price_update::TwapUpdate;
 
 pub const ANCHOR_DISCRIMINATOR_SIZE: usize = 8;
 
 #[derive(Accounts)]
 pub struct Start<'info> {
-    #[account(init, payer = host,space = ANCHOR_DISCRIMINATOR_SIZE + GameState::SIZE,
+    #[account(mut)]
+    pub host: Signer<'info>,
+    #[account(init_if_needed, payer = host,space = ANCHOR_DISCRIMINATOR_SIZE + GameState::SIZE,
             seeds = [b"liarsdicesession", host.key().as_ref()],
             bump)]
     pub game: Account<'info, GameState>,
+    pub mint: InterfaceAccount<'info, Mint>,
+    #[account(init_if_needed, token::mint = mint, token::authority = vault, payer = host, seeds = [b"vault", host.key().as_ref()], bump)]
+    pub vault: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
-    pub host: Signer<'info>,
+    pub host_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
+    pub twap_update: Account<'info, TwapUpdate>,
 }
 
 impl<'info> Start<'info> {
@@ -24,58 +33,9 @@ impl<'info> Start<'info> {
         let game_id = self.host.key();
         self.game.initialize_game(game_id, player_num, buy_in)?;
         msg!("Game session created successfully with ID: {}!", game_id);
+
+        // transfer sol from host to game pot --> rewrite this into utils to reuse for join game
+
         Ok(())
     }
 }
-
-// TODO: rewrite tests with updated create game function
-// #[cfg(test)]
-// pub mod test {
-//     use super::*;
-//     use crate::accounts::Initialize as InitializeAccounts;
-//     use crate::instruction::Initialize as InitializeInstruction;
-//     use anchor_lang::{InstructionData, ToAccountMetas};
-//     use litesvm::LiteSVM;
-//     use solana_sdk::{
-//         instruction::{AccountMeta, Instruction},
-//         message::Message,
-//         pubkey::Pubkey,
-//         signature::Keypair,
-//         signature::Signer,
-//         transaction::Transaction,
-//     };
-
-//     #[tokio::test]
-//     pub async fn test_basic_program() {
-//         // 1. start up new SVM instance (local validator)
-//         let mut svm = LiteSVM::new();
-
-//         // 2. generate payer keypair to sign
-//         let host_kp = Keypair::new();
-//         let host_pk = host_kp.pubkey();
-
-//         // 3. read in program binary and airdop sol to payer
-//         let program_id = pubkey!("AZrqTVywNJhAvGvComNiHVbmUCVEyJnhfcKtGURdmG2B");
-//         let bytes = include_bytes!("../../../../target/deploy/liars_dice.so");
-//         svm.add_program(program_id, bytes);
-//         svm.airdrop(&host_pk, 1_000_000_000).unwrap();
-
-//         // 4. create instruction
-//         let accounts = InitializeAccounts {}.to_account_metas(Some(false));
-//         let data = InitializeInstruction.data();
-//         let ix = Instruction {
-//             program_id,
-//             accounts,
-//             data,
-//         };
-
-//         // 5. create message and send transaction
-//         let msg = Message::new_with_blockhash(&[ix], Some(&host_pk), &svm.latest_blockhash());
-//         let tx = Transaction::new(&[host_kp], msg, svm.latest_blockhash());
-//         let meta = svm.send_transaction(tx).unwrap();
-//         assert_eq!(
-//             meta.logs[2],
-//             "Program log: Greetings from: AZrqTVywNJhAvGvComNiHVbmUCVEyJnhfcKtGURdmG2B"
-//         )
-//     }
-// }

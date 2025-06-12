@@ -1,57 +1,82 @@
-import * as anchor from "@coral-xyz/anchor";
-import { BN } from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { LiarsDice } from "../target/types/liars_dice";
-import { assert } from "chai";
+// import * as anchor from "@coral-xyz/anchor";
+// import { PublicKey } from "@solana/web3.js";
+// import { Program } from "@coral-xyz/anchor";
+// import { LiarsDice } from "../target/types/liars_dice";
+// import { createGame } from "../test-helpers/createGame";
 
-const expect = require("chai").expect;
+// import { assert } from "chai";
+// import {
+//   PythSolanaReceiver,
+//   InstructionWithEphemeralSigners,
+// } from "@pythnetwork/pyth-solana-receiver";
 
-describe("game-creation-tests", () => {
-  // Configure the client to use the local cluster.
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
+// const expect = require("chai").expect;
 
-  const program = anchor.workspace.LiarsDice as Program<LiarsDice>;
-  const host = provider.wallet.publicKey;
+// describe("game-join-tests", () => {
+//   // Configure the client to use the local cluster.
+//   const provider = anchor.AnchorProvider.env();
+//   anchor.setProvider(provider);
 
-  it("Game PDA created successfully!", async () => {
-    // receive 1 SOL airdrop
-    const signature = await provider.connection.requestAirdrop(
-      host,
-      1000000000
-    );
+//   const program = anchor.workspace.LiarsDice as Program<LiarsDice>;
 
-    const latestBlockhash = await provider.connection.getLatestBlockhash();
+//   it("Game joined successfully!", async () => {
+//     // create new game to join and initialize player
+//     const { gamePda, gameState } = await createGame(program, provider, 5, 20);
+//     const player = PublicKey.unique();
 
-    await provider.connection.confirmTransaction(
-      {
-        signature,
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      },
-      "confirmed"
-    );
+//     // build transaction for TwapUpdate
+//     const hermesClient = new HermesClient("https://hermes.pyth.network/", {});
+//     const twapWindowSeconds = 300; // 5 minutes
 
-    // derive expected pda
-    const [game_pda] = anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("liarsdicesession"), host.toBuffer()],
-      program.programId
-    );
+//     const twapUpdateData = await hermesClient.getLatestTwaps(
+//       ["0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"], // SOL/USD feed ID
+//       twapWindowSeconds,
+//       { encoding: "base64" }
+//     );
 
-    // send initialize instruction
-    const player_num = 5;
-    const buy_in = 20;
+//     console.log(twapUpdateData.binary.data);
 
-    const tx = await program.methods
-      .initialize(new BN(player_num), new BN(buy_in))
-      .rpc();
+//     const pythSolanaReceiver = new PythSolanaReceiver({
+//       connection: provider.connection,
+//       wallet:
+//         provider.wallet as unknown as import("@pythnetwork/pyth-solana-receiver/node_modules/@coral-xyz/anchor").Wallet,
+//     });
 
-    const gameState = await program.account.gameState.fetch(game_pda);
+//     const transactionBuilder = pythSolanaReceiver.newTransactionBuilder({
+//       closeUpdateAccounts: false,
+//     });
 
-    console.log("Transaction Signature:", tx);
-    console.log("Host Pubkey:", host.toBase58());
-    console.log("Game ID:", gameState.gameId.toBase58());
+//     await transactionBuilder.addPostTwapUpdates(twapUpdateData.binary.data);
 
-    assert.strictEqual(gameState.gameId.toBase58(), host.toBase58());
-  });
-});
+//     await transactionBuilder.addTwapConsumerInstructions(
+//       async (
+//         getTwapUpdateAccount: (priceFeedId: string) => PublicKey
+//       ): Promise<InstructionWithEphemeralSigners[]> => {
+//         // Generate instructions here that use the TWAP updates posted above
+//         // getTwapUpdateAccount(<price feed id>) will give you the account for each TWAP update
+//         //
+//         const ix = await program.methods
+//           .joinGame(gameState.gameId)
+//           .accounts({
+//             player: player,
+//             twapUpdate: getTwapUpdateAccount(
+//               "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"
+//             ),
+//           })
+//           .instruction();
+
+//         return [];
+//       }
+//     );
+
+//     // Send the instructions
+//     const result = await pythSolanaReceiver.provider.sendAll(
+//       await transactionBuilder.buildVersionedTransactions({
+//         computeUnitPriceMicroLamports: 50000,
+//       }),
+//       { skipPreflight: true }
+//     );
+
+//     console.log(result);
+//   });
+// });

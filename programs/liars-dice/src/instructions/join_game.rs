@@ -38,7 +38,7 @@ impl<'info> Join<'info> {
             let amount_to_transfer: u64 =
                 convert_usd_to_lamports(usd_buy_in, &mut self.twap_update)?;
 
-            msg!("Placing {} LAMPORT buy-in in game pot", amount_to_transfer);
+            msg!("Placing {} LAMPORTS buy-in in game pot", amount_to_transfer);
 
             // !!! TODO: transfer funds from player wallet to game state
 

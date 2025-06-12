@@ -11,7 +11,7 @@ pub mod utils;
 
 use anchor_lang::prelude::*;
 
-declare_id!("AZrqTVywNJhAvGvComNiHVbmUCVEyJnhfcKtGURdmG2B");
+declare_id!("G7RC2ZVv9eyxAcZeKwATSKx8X822KgnQ3og5gA1MAjZT");
 
 #[program]
 pub mod liars_dice {

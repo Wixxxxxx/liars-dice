@@ -7,11 +7,14 @@ skip-lint = false
 [programs.localnet]
 liars_dice = "AZrqTVywNJhAvGvComNiHVbmUCVEyJnhfcKtGURdmG2B"
 
+[programs.devnet]
+liars_dice = "G7RC2ZVv9eyxAcZeKwATSKx8X822KgnQ3og5gA1MAjZT"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
