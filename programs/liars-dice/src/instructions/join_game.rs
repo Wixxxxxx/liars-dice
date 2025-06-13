@@ -1,6 +1,5 @@
 use crate::errors::LiarsDiceError;
 use crate::game_state::GameState;
-use crate::utils::price_utils::convert_usd_to_lamports;
 use anchor_lang::prelude::*;
 use pyth_solana_receiver_sdk::price_update::TwapUpdate;
 
@@ -33,14 +32,9 @@ impl<'info> Join<'info> {
         if let Some(slot) = self.game.players.iter_mut().find(|p| p.is_none()) {
             *slot = Some(self.player.key());
 
-            // convert usd buy in to lamports
-            let usd_buy_in = self.game.buy_in;
-            let amount_to_transfer: u64 =
-                convert_usd_to_lamports(usd_buy_in, &mut self.twap_update)?;
+            // msg!("Placing {} LAMPORTS buy-in in game pot", amount_to_transfer);
 
-            msg!("Placing {} LAMPORTS buy-in in game pot", amount_to_transfer);
-
-            // !!! TODO: transfer funds from player wallet to game state
+            // !!! TODO: transfer funds from player wallet to game state (WE NOW HAVE THE CORRECT AMOUNT)
 
             Ok(())
         } else {

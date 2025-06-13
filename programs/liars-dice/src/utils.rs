@@ -8,6 +8,7 @@ pub mod price_utils {
 
     pub fn convert_usd_to_lamports(
         amount_in_usd: u64,
+        decimals: u8,
         twap_update: &mut TwapUpdate,
     ) -> Result<u64, PriceConversionError> {
         // connect to pyth SOL/USD feed
@@ -33,7 +34,9 @@ pub mod price_utils {
             .try_into()
             .map_err(|_| PriceConversionError::InvalidExponent)?;
 
-        let amount_in_lamports = (LAMPORTS_PER_SOL as u128)
+        let units_per_token = 10_u128.pow(decimals as u32);
+
+        let amount_in_lamports = (units_per_token)
             .checked_mul(10_u128.pow(scale))
             .ok_or(PriceConversionError::MultOverflow)?
             .checked_mul(amount_in_usd as u128)
@@ -46,3 +49,5 @@ pub mod price_utils {
             .map_err(|_| PriceConversionError::ResultTooLarge)
     }
 }
+
+pub mod transfer_utils {}
