@@ -50,4 +50,38 @@ pub mod price_utils {
     }
 }
 
-pub mod transfer_utils {}
+pub mod transfer_utils {
+    use crate::errors::TransferError;
+    use anchor_lang::{
+        error::Error,
+        prelude::{CpiContext, Interface, InterfaceAccount, Signer, ToAccountInfo},
+    };
+    use anchor_spl::{
+        token_2022::{transfer_checked, TransferChecked},
+        token_interface::{Mint, TokenAccount, TokenInterface},
+    };
+
+    pub fn transfer_funds<'a>(
+        from_acct: &mut InterfaceAccount<'a, TokenAccount>,
+        to_act: &mut InterfaceAccount<'a, TokenAccount>,
+        mint: &mut InterfaceAccount<'a, Mint>,
+        authority: &mut Signer<'a>,
+        token_program: &mut Interface<'a, TokenInterface>,
+        amount: u64,
+        decimals: u8,
+    ) -> Result<(), Error> {
+        let pot_deposit_cpi_accounts = TransferChecked {
+            from: from_acct.to_account_info(),
+            to: to_act.to_account_info(),
+            mint: mint.to_account_info(),
+            authority: authority.to_account_info(),
+        };
+
+        let cpi_program = token_program.to_account_info();
+        let cpi_ctx = CpiContext::new(cpi_program, pot_deposit_cpi_accounts);
+
+        transfer_checked(cpi_ctx, amount, decimals).map_err(|_| TransferError::TransferError)?;
+
+        Ok(())
+    }
+}

@@ -3,14 +3,27 @@ use anchor_lang::prelude::*;
 #[account]
 #[derive(InitSpace)]
 pub struct Player {
+    pub player_id: Pubkey,
     #[max_len(5)]
-    pub name: String,
+    pub gamer_tag: String,
     pub game_host: bool,
     #[max_len(5)]
     pub dice: Vec<u8>,
     pub rounds_won: u64,
     pub rounds_lost: u64,
-    pub winnings: u64,
+    pub winnings: i64,
+    pub is_init: bool,
 }
 
-impl Player {}
+impl Player {
+    pub fn init_player(&mut self, player_id: Pubkey, gamer_tag: String, is_game_host: bool) {
+        self.player_id = player_id;
+        self.gamer_tag = gamer_tag;
+        self.game_host = is_game_host;
+        self.dice = Vec::new();
+        self.rounds_won = 0;
+        self.rounds_lost = 0;
+        self.winnings = 0;
+        self.is_init = true;
+    }
+}

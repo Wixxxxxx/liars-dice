@@ -1,9 +1,9 @@
-use crate::state::game_state::GameState;
 use crate::utils::price_utils::convert_usd_to_lamports;
+use crate::utils::transfer_utils::transfer_funds;
+use crate::{state::game_state::GameState, Player};
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_2022::{transfer_checked, TransferChecked},
     token_interface::{Mint, TokenAccount, TokenInterface},
 };
 use pyth_solana_receiver_sdk::price_update::TwapUpdate;
@@ -14,6 +14,13 @@ pub const ANCHOR_DISCRIMINATOR_SIZE: usize = 8;
 pub struct Start<'info> {
     #[account(mut)]
     pub host: Signer<'info>,
+    #[account(
+        init_if_needed,
+        payer = host,
+        space = ANCHOR_DISCRIMINATOR_SIZE + Player::INIT_SPACE,
+        seeds = [b"player", host.key().as_ref()],
+        bump)]
+    host_player: Account<'info, Player>,
     #[account(
         init_if_needed,
         payer = host,
@@ -43,7 +50,12 @@ pub struct Start<'info> {
 }
 
 impl<'info> Start<'info> {
-    pub fn create_game(&mut self, player_num: u64, buy_in_usd: u64) -> Result<()> {
+    pub fn create_game(
+        &mut self,
+        player_num: u64,
+        buy_in_usd: u64,
+        gamer_tag: String,
+    ) -> Result<()> {
         msg!(
             "Creating game with {} players and ${} buy-in",
             player_num,
@@ -62,20 +74,21 @@ impl<'info> Start<'info> {
             buy_in_sol
         );
 
-        let pot_deposit_cpi_accounts = TransferChecked {
-            from: self.host_token_account.to_account_info(),
-            to: self.vault.to_account_info(),
-            mint: self.mint.to_account_info(),
-            authority: self.host.to_account_info(),
-        };
+        // insert host to player list and update host player PDA
+        self.game.players[0] = Some(self.host.key());
+        if !self.host_player.is_init {
+            self.host_player
+                .init_player(self.host.key(), gamer_tag, true);
+        }
 
-        let cpi_program = self.token_program.to_account_info();
-        let cpi_ctx = CpiContext::new(cpi_program, pot_deposit_cpi_accounts);
-
-        transfer_checked(cpi_ctx, buy_in_sol, decimals)?;
-
-        msg!("Host deposited {} SOL into the game pot", buy_in_sol);
-
-        Ok(())
+        transfer_funds(
+            &mut self.host_token_account,
+            &mut self.vault,
+            &mut self.mint,
+            &mut self.host,
+            &mut self.token_program,
+            buy_in_sol,
+            decimals,
+        )
     }
 }

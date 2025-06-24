@@ -8,7 +8,7 @@ skip-lint = false
 liars_dice = "AZrqTVywNJhAvGvComNiHVbmUCVEyJnhfcKtGURdmG2B"
 
 [programs.devnet]
-liars_dice = "G7RC2ZVv9eyxAcZeKwATSKx8X822KgnQ3og5gA1MAjZT"
+liars_dice = "3TgXhxUPSweZi49FSByfXAXXxnvoFJaui9kaZxfuUTSu"
 
 [registry]
 url = "https://api.apr.dev"

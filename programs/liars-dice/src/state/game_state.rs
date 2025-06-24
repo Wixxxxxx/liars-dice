@@ -10,6 +10,7 @@ pub struct GameState {
     pub buy_in_sol: u64,
     pub token_mint: Pubkey, // !don't forget to init
     pub pot: u64,
+    pub is_ready: bool,
 }
 
 impl GameState {
@@ -34,6 +35,7 @@ impl GameState {
         self.buy_in_usd = buy_in_usd;
         self.buy_in_sol = buy_in_sol;
         self.pot = buy_in_sol;
+        self.is_ready = false;
         Ok(())
     }
 }

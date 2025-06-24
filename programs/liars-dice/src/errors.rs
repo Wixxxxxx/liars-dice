@@ -12,6 +12,8 @@ pub enum LiarsDiceError {
     GameFull,
     #[msg("Player already joined the game")]
     PlayerAlreadyJoined,
+    #[msg("Game session is not ready")]
+    GameNotReady,
 }
 
 #[error_code]
@@ -30,4 +32,10 @@ pub enum PriceConversionError {
     ClockError,
     #[msg("Price fetch error")]
     PriceFetchError,
+}
+
+#[error_code]
+pub enum TransferError {
+    #[msg("Issue transfering funds")]
+    TransferError,
 }

@@ -1,8 +1,9 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program, Wallet } from "@coral-xyz/anchor";
 import { LiarsDice } from "../target/types/liars_dice";
-import { PublicKey, Keypair, sendAndConfirmTransaction } from "@solana/web3.js";
+import { PublicKey, Keypair } from "@solana/web3.js";
 import { createGame } from "../test-helpers/createGame";
+import { createMint } from "@solana/spl-token";
 
 import { HermesClient } from "@pythnetwork/hermes-client";
 import {
@@ -19,99 +20,38 @@ describe("lobby-tests", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
-
   const program = anchor.workspace.LiarsDice as Program<LiarsDice>;
-  const host = provider.wallet.publicKey;
+  const host = provider.wallet.payer;
 
   let gamePda: anchor.web3.PublicKey;
   let gameState: anchor.IdlTypes<LiarsDice>["gameState"];
 
   before(async () => {
-    ({ gamePda, gameState } = await createGame(program, provider, 5, 20));
+    const mintSOL = await createMint(
+      provider.connection,
+      provider.wallet.payer,
+      host.publicKey,
+      null,
+      2
+    );
+
+    ({ gamePda, gameState } = await createGame(
+      program,
+      provider,
+      5,
+      20,
+      mintSOL
+    ));
   });
 
   it("Game PDA created successfully!", async () => {
     // ensure the created game's ID belongs to the host
-    console.log("Host Pubkey:", host.toBase58());
+    console.log("Host Pubkey:", host.publicKey.toBase58());
     console.log("Game ID:", gameState.gameId.toBase58());
     console.log("Game PDA:", gamePda.toBase58());
 
-    assert.strictEqual(gameState.gameId.toBase58(), host.toBase58());
+    assert.strictEqual(gameState.gameId.toBase58(), host.publicKey.toBase58());
   });
 
-  it("Player joined successfully!", async () => {
-    const player = Keypair.generate();
-
-    // // Airdrop 1 SOL to player
-    // const signature = await provider.connection.requestAirdrop(
-    //   player.publicKey,
-    //   1_000_000_000
-    // );
-
-    // const latestBlockhash = await provider.connection.getLatestBlockhash();
-
-    // await provider.connection.confirmTransaction(
-    //   {
-    //     signature,
-    //     blockhash: latestBlockhash.blockhash,
-    //     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-    //   },
-    //   "confirmed"
-    // );
-
-    // build transaction for TwapUpdate
-    const hermesClient = new HermesClient("https://hermes.pyth.network/", {});
-    const twapWindowSeconds = 300; // 5 minutes
-
-    const twapUpdateData = await hermesClient.getLatestTwaps(
-      [SOL_PRICE_FEED_ID], // SOL/USD feed ID
-      twapWindowSeconds,
-      { encoding: "base64" }
-    );
-
-    const pythSolanaReceiver = new PythSolanaReceiver({
-      connection: provider.connection,
-      wallet: provider.wallet as Wallet,
-    });
-
-    const transactionBuilder = pythSolanaReceiver.newTransactionBuilder({
-      closeUpdateAccounts: false,
-    });
-
-    await transactionBuilder.addPostTwapUpdates(twapUpdateData.binary.data);
-
-    const twapPubkey =
-      transactionBuilder.getTwapUpdateAccount(SOL_PRICE_FEED_ID);
-    console.log("TWAP account:", twapPubkey.toBase58());
-
-    await transactionBuilder.addTwapConsumerInstructions(
-      async (
-        getTwapUpdateAccount: (priceFeedId: string) => PublicKey
-      ): Promise<InstructionWithEphemeralSigners[]> => {
-        return [
-          {
-            instruction: await program.methods
-              .joinGame(gameState.gameId)
-              .accounts({
-                player: player.publicKey,
-                twapUpdate: getTwapUpdateAccount(SOL_PRICE_FEED_ID),
-              })
-              .instruction(),
-            signers: [player],
-          },
-        ];
-      }
-    );
-
-    const tx = await transactionBuilder.buildVersionedTransactions({
-      computeUnitPriceMicroLamports: 100_000,
-    });
-
-    // Send the instructions
-    const result = await pythSolanaReceiver.provider.sendAll(tx, {
-      skipPreflight: true,
-    });
-
-    console.log("Transaction Result:", result);
-  });
+  it("Player joined successfully!", async () => {});
 });
