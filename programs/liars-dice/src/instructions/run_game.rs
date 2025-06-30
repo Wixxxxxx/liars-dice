@@ -22,5 +22,5 @@ impl<'info> Run<'info> {
         }
     }
 
-    pub fn game_loop(&mut self) -> Result<()> {}
+    // pub fn game_loop(&mut self) -> Result<()> {}
 }
