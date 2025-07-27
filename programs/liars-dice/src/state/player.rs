@@ -7,8 +7,6 @@ pub struct Player {
     #[max_len(5)]
     pub gamer_tag: String,
     pub game_host: bool,
-    #[max_len(5)]
-    pub dice: Vec<u8>,
     pub rounds_won: u64,
     pub rounds_lost: u64,
     pub winnings: i64,
@@ -20,7 +18,6 @@ impl Player {
         self.player_id = player_id;
         self.gamer_tag = gamer_tag;
         self.game_host = is_game_host;
-        self.dice = Vec::new();
         self.rounds_won = 0;
         self.rounds_lost = 0;
         self.winnings = 0;

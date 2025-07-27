@@ -5,6 +5,7 @@ use anchor_lang::prelude::*;
 pub struct GameState {
     pub game_id: Pubkey,
     pub players: [Option<Pubkey>; 5],
+    pub dice: Vec<Vec<u8>>,
     pub game_phase: GamePhase,
     pub buy_in_usd: u64,
     pub buy_in_sol: u64,
