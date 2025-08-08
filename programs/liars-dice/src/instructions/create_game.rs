@@ -65,14 +65,11 @@ impl<'info> Start<'info> {
         let game_id = self.host.key();
         let decimals = self.mint.decimals;
         let buy_in_sol = convert_usd_to_lamports(buy_in_usd, decimals, &mut self.twap_update)?;
+
         self.game
             .initialize_game(game_id, player_num, buy_in_usd, buy_in_sol)?;
 
-        msg!(
-            "Game session created successfully with ID: {}! and buy-in {} LAMPORTS",
-            game_id,
-            buy_in_sol
-        );
+        msg!("Inserting host to player list...");
 
         // insert host to player list and update host player PDA
         self.game.players[0] = Some(self.host.key());
@@ -80,6 +77,12 @@ impl<'info> Start<'info> {
             self.host_player
                 .init_player(self.host.key(), gamer_tag, true);
         }
+
+        msg!(
+            "Transferring host ${}, {} SOL buy-in to game pot",
+            buy_in_usd,
+            buy_in_sol
+        );
 
         transfer_funds(
             &mut self.host_token_account,

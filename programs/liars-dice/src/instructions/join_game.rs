@@ -75,6 +75,7 @@ impl<'info> Join<'info> {
                 decimals,
             )
         } else {
+            msg!("Game is full, player failed to join");
             Err(LiarsDiceError::GameFull.into())
         }
     }
